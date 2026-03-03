@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="Productos.API/Productos.API.csproj" Id="b876a653-5d64-410b-b266-a3d5276505d2" />
+  <Project Path="Transacciones.API/Transacciones.API.csproj" Id="be5a6d6a-53ec-47dd-96c5-e8bfebf591ca" />
+</Solution>
