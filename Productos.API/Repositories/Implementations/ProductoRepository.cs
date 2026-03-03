@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Productos.API.Data;
+using Productos.API.Models.DTOs;
 using Productos.API.Models.Entities;
 using Productos.API.Repositories.Interfaces;
 
@@ -14,13 +15,18 @@ namespace Productos.API.Repositories.Implementations
             _context = context;
         }
 
-        public async Task<IEnumerable<Producto>> ObtenerTodosAsync(string? nombre,
+        public async Task<PaginadoDto<Producto>> ObtenerTodosAsync(string? nombre,
                                                                    int? categoriaId,
                                                                    decimal? precioMin,
                                                                    decimal? precioMax,
-                                                                   bool? activo)
+                                                                   bool? activo,
+                                                                   int pagina,
+                                                                   int itemsPorPagina)
         {
-            var query = _context.Productos.Include(p => p.Categoria).AsQueryable();
+            var query = _context.Productos
+                .Include(p => p.Categoria)
+                .Where(p => !p.Eliminado)
+                .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(nombre))
                 query = query.Where(p => p.Nombre.ToLower().Contains(nombre.ToLower()));
@@ -37,14 +43,28 @@ namespace Productos.API.Repositories.Implementations
             if (activo.HasValue)
                 query = query.Where(p => p.Activo == activo.Value);
 
-            return await query.OrderBy(p => p.Nombre).ToListAsync();
+            var totalItems = await query.CountAsync();
+
+            var items = await query
+                .OrderBy(p => p.Nombre)
+                .Skip((pagina - 1) * itemsPorPagina)
+                .Take(itemsPorPagina)
+                .ToListAsync();
+
+            return new PaginadoDto<Producto>
+            {
+                Items = items,
+                TotalItems = totalItems,
+                PaginaActual = pagina,
+                ItemsPorPagina = itemsPorPagina
+            };
         }
 
         public async Task<Producto?> ObtenerPorIdAsync(int id)
         {
             return await _context.Productos
                 .Include(p => p.Categoria)
-                .FirstOrDefaultAsync(p => p.Id == id);
+                .FirstOrDefaultAsync(p => p.Id == id && !p.Eliminado);
         }
 
         public async Task<Producto> CrearAsync(Producto producto)
@@ -66,10 +86,12 @@ namespace Productos.API.Repositories.Implementations
 
         public async Task<bool> EliminarAsync(int id)
         {
-            var producto = await _context.Productos.FindAsync(id);
+            var producto = await _context.Productos
+                .FirstOrDefaultAsync(p => p.Id == id && !p.Eliminado);
             if (producto == null) return false;
 
-            _context.Productos.Remove(producto);
+            producto.Eliminado = true;
+            producto.ActualizadoEn = DateTime.UtcNow;
             await _context.SaveChangesAsync();
             return true;
         }
@@ -83,6 +105,13 @@ namespace Productos.API.Repositories.Implementations
             producto.ActualizadoEn = DateTime.UtcNow;
             await _context.SaveChangesAsync();
             return true;
+        }
+        public async Task<IEnumerable<Producto>> ObtenerParaSelectAsync()
+        {
+            return await _context.Productos
+                .Where(p => !p.Eliminado && p.Activo)
+                .OrderBy(p => p.Nombre)
+                .ToListAsync();
         }
     }
 }

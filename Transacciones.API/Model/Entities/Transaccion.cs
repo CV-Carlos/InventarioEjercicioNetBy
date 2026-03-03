@@ -17,5 +17,6 @@
         public decimal PrecioTotal { get; set; }
         public string? Detalle { get; set; }
         public DateTime CreadoEn { get; set; }
+        public bool Eliminado { get; set; }
     }
 }

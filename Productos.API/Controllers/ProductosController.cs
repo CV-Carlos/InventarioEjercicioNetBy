@@ -16,18 +16,21 @@ namespace Productos.API.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> ObtenerTodos(
-            [FromQuery] string? nombre,
-            [FromQuery] int? categoriaId,
-            [FromQuery] decimal? precioMin,
-            [FromQuery] decimal? precioMax,
-            [FromQuery] bool? activo)
+        public async Task<IActionResult> ObtenerTodos([FromQuery] string? nombre,
+                                                      [FromQuery] int? categoriaId,
+                                                      [FromQuery] decimal? precioMin,
+                                                      [FromQuery] decimal? precioMax,
+                                                      [FromQuery] bool? activo,
+                                                      [FromQuery] int pagina = 1,
+                                                      [FromQuery] int itemsPorPagina = 10)
         {
             var productos = await _service.ObtenerTodosAsync(nombre,
                                                              categoriaId,
                                                              precioMin,
                                                              precioMax,
-                                                             activo);
+                                                             activo,
+                                                             pagina,
+                                                             itemsPorPagina);
             return Ok(productos);
         }
 
@@ -72,6 +75,13 @@ namespace Productos.API.Controllers
             var resultado = await _service.ActualizarStockAsync(id, cantidad);
             if (!resultado) return NotFound(new { mensaje = "Producto no encontrado" });
             return Ok(new { mensaje = "Stock actualizado correctamente" });
+        }
+
+        [HttpGet("select")]
+        public async Task<IActionResult> ObtenerParaSelect()
+        {
+            var productos = await _service.ObtenerParaSelectAsync();
+            return Ok(productos);
         }
     }
 }

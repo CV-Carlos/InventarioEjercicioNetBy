@@ -20,9 +20,16 @@ namespace Transacciones.API.Controllers
             [FromQuery] int? productoId,
             [FromQuery] DateTime? fechaInicio,
             [FromQuery] DateTime? fechaFin,
-            [FromQuery] string? tipo)
+            [FromQuery] string? tipo,
+            [FromQuery] int pagina = 1,
+            [FromQuery] int itemsPorPagina = 10)
         {
-            var transacciones = await _service.ObtenerTodosAsync(productoId, fechaInicio, fechaFin, tipo);
+            var transacciones = await _service.ObtenerTodosAsync(productoId,
+                                                                 fechaInicio,
+                                                                 fechaFin,
+                                                                 tipo,
+                                                                 pagina,
+                                                                 itemsPorPagina);
             return Ok(transacciones);
         }
 

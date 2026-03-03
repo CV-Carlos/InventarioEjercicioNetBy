@@ -12,6 +12,7 @@
         public bool Activo { get; set; }
         public DateTime CreadoEn { get; set; }
         public DateTime ActualizadoEn { get; set; }
+        public bool Eliminado { get; set; }
 
         public Categoria Categoria { get; set; } = null!;
     }

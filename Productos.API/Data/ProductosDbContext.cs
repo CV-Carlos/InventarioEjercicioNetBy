@@ -30,16 +30,32 @@ namespace Productos.API.Data
             {
                 entity.ToTable("productos");
                 entity.HasKey(e => e.Id);
-                entity.Property(e => e.Id).HasColumnName("id");
-                entity.Property(e => e.Nombre).HasColumnName("nombre").HasMaxLength(200).IsRequired();
-                entity.Property(e => e.Descripcion).HasColumnName("descripcion");
-                entity.Property(e => e.CategoriaId).HasColumnName("categoria_id");
-                entity.Property(e => e.ImagenUrl).HasColumnName("imagen_url").HasMaxLength(500);
-                entity.Property(e => e.Precio).HasColumnName("precio").HasColumnType("numeric(10,2)");
-                entity.Property(e => e.Stock).HasColumnName("stock");
-                entity.Property(e => e.Activo).HasColumnName("activo");
-                entity.Property(e => e.CreadoEn).HasColumnName("creado_en");
-                entity.Property(e => e.ActualizadoEn).HasColumnName("actualizado_en");
+                entity.Property(e => e.Id)
+                      .HasColumnName("id");
+                entity.Property(e => e.Nombre)
+                      .HasColumnName("nombre")
+                      .HasMaxLength(200)
+                      .IsRequired();
+                entity.Property(e => e.Descripcion)
+                      .HasColumnName("descripcion");
+                entity.Property(e => e.CategoriaId)
+                      .HasColumnName("categoria_id");
+                entity.Property(e => e.ImagenUrl)
+                      .HasColumnName("imagen_url")
+                      .HasMaxLength(500);
+                entity.Property(e => e.Precio)
+                      .HasColumnName("precio")
+                      .HasColumnType("numeric(10,2)");
+                entity.Property(e => e.Stock)
+                      .HasColumnName("stock");
+                entity.Property(e => e.Activo)
+                      .HasColumnName("activo");
+                entity.Property(e => e.CreadoEn)
+                      .HasColumnName("creado_en");
+                entity.Property(e => e.ActualizadoEn)
+                      .HasColumnName("actualizado_en");
+                entity.Property(e => e.Eliminado)
+                      .HasColumnName("eliminado");
 
                 entity.HasOne(e => e.Categoria)
                       .WithMany(c => c.Productos)

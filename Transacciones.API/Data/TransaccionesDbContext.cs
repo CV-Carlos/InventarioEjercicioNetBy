@@ -39,6 +39,8 @@ namespace Transacciones.API.Data
                       .HasColumnName("detalle");
                 entity.Property(e => e.CreadoEn)
                       .HasColumnName("creado_en");
+                entity.Property(e => e.Eliminado)
+                      .HasColumnName("eliminado");
             });
         }
     }

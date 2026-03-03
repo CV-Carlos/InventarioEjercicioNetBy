@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Transacciones.API.Data;
+using Transacciones.API.Models.DTOs;
 using Transacciones.API.Models.Entities;
 using Transacciones.API.Repositories.Interfaces;
 
@@ -14,9 +15,11 @@ namespace Transacciones.API.Repositories.Implementations
             _context = context;
         }
 
-        public async Task<IEnumerable<Transaccion>> ObtenerTodosAsync(int? productoId, DateTime? fechaInicio, DateTime? fechaFin, string? tipo)
+        public async Task<PaginadoDto<Transaccion>> ObtenerTodosAsync(int? productoId, DateTime? fechaInicio, DateTime? fechaFin, string? tipo, int pagina, int itemsPorPagina)
         {
-            var query = _context.Transacciones.AsQueryable();
+            var query = _context.Transacciones
+                .Where(t => !t.Eliminado)
+                .AsQueryable();
 
             if (productoId.HasValue)
                 query = query.Where(t => t.ProductoId == productoId.Value);
@@ -33,12 +36,27 @@ namespace Transacciones.API.Repositories.Implementations
                     query = query.Where(t => t.Tipo == tipoEnum);
             }
 
-            return await query.OrderByDescending(t => t.Fecha).ToListAsync();
+            var totalItems = await query.CountAsync();
+
+            var items = await query
+                .OrderByDescending(t => t.Fecha)
+                .Skip((pagina - 1) * itemsPorPagina)
+                .Take(itemsPorPagina)
+                .ToListAsync();
+
+            return new PaginadoDto<Transaccion>
+            {
+                Items = items,
+                TotalItems = totalItems,
+                PaginaActual = pagina,
+                ItemsPorPagina = itemsPorPagina
+            };
         }
 
         public async Task<Transaccion?> ObtenerPorIdAsync(int id)
         {
-            return await _context.Transacciones.FindAsync(id);
+            return await _context.Transacciones
+                .FirstOrDefaultAsync(t => t.Id == id && !t.Eliminado);
         }
 
         public async Task<Transaccion> CrearAsync(Transaccion transaccion)
@@ -68,10 +86,11 @@ namespace Transacciones.API.Repositories.Implementations
 
         public async Task<bool> EliminarAsync(int id)
         {
-            var transaccion = await _context.Transacciones.FindAsync(id);
+            var transaccion = await _context.Transacciones
+                .FirstOrDefaultAsync(t => t.Id == id && !t.Eliminado);
             if (transaccion == null) return false;
 
-            _context.Transacciones.Remove(transaccion);
+            transaccion.Eliminado = true;
             await _context.SaveChangesAsync();
             return true;
         }

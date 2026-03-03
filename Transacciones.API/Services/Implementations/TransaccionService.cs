@@ -16,18 +16,34 @@ namespace Transacciones.API.Services.Implementations
             _productoCliente = productoCliente;
         }
 
-        public async Task<IEnumerable<TransaccionDto>> ObtenerTodosAsync(int? productoId, DateTime? fechaInicio, DateTime? fechaFin, string? tipo)
+        public async Task<PaginadoDto<TransaccionDto>> ObtenerTodosAsync(int? productoId,
+                                                                         DateTime? fechaInicio,
+                                                                         DateTime? fechaFin,
+                                                                         string? tipo,
+                                                                         int pagina,
+                                                                         int itemsPorPagina)
         {
-            var transacciones = await _repository.ObtenerTodosAsync(productoId, fechaInicio, fechaFin, tipo);
-            var dtos = new List<TransaccionDto>();
+            var resultado = await _repository.ObtenerTodosAsync(productoId,
+                                                                fechaInicio,
+                                                                fechaFin,
+                                                                tipo,
+                                                                pagina,
+                                                                itemsPorPagina);
+            var transacciones = new List<TransaccionDto>();
 
-            foreach (var t in transacciones)
+            foreach (var t in resultado.Items)
             {
                 var producto = await _productoCliente.ObtenerProductoAsync(t.ProductoId);
-                dtos.Add(MapearADto(t, producto));
+                transacciones.Add(MapearADto(t, producto));
             }
 
-            return dtos;
+            return new PaginadoDto<TransaccionDto>
+            {
+                Items = transacciones,
+                TotalItems = resultado.TotalItems,
+                PaginaActual = resultado.PaginaActual,
+                ItemsPorPagina = resultado.ItemsPorPagina
+            };
         }
 
         public async Task<TransaccionDto?> ObtenerPorIdAsync(int id)

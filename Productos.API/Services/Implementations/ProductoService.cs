@@ -14,14 +14,29 @@ namespace Productos.API.Services.Implementations
             _repository = repository;
         }
 
-        public async Task<IEnumerable<ProductoDto>> ObtenerTodosAsync(string? nombre,
+        public async Task<PaginadoDto<ProductoDto>> ObtenerTodosAsync(string? nombre,
                                                                       int? categoriaId,
                                                                       decimal? precioMin,
                                                                       decimal? precioMax,
-                                                                      bool? activo)
+                                                                      bool? activo,
+                                                                      int pagina,
+                                                                      int itemsPorPagina)
         {
-            var productos = await _repository.ObtenerTodosAsync(nombre, categoriaId, precioMin, precioMax, activo);
-            return productos.Select(MapearADto);
+            var resultado = await _repository.ObtenerTodosAsync(nombre,
+                                                                categoriaId,
+                                                                precioMin,
+                                                                precioMax,
+                                                                activo,
+                                                                pagina,
+                                                                itemsPorPagina);
+
+            return new PaginadoDto<ProductoDto>
+            {
+                Items = resultado.Items.Select(MapearADto),
+                TotalItems = resultado.TotalItems,
+                PaginaActual = resultado.PaginaActual,
+                ItemsPorPagina = resultado.ItemsPorPagina
+            };
         }
 
         public async Task<ProductoDto?> ObtenerPorIdAsync(int id)
@@ -86,5 +101,16 @@ namespace Productos.API.Services.Implementations
             Stock = producto.Stock,
             Activo = producto.Activo
         };
+        public async Task<IEnumerable<ProductoSelectDto>> ObtenerParaSelectAsync()
+        {
+            var productos = await _repository.ObtenerParaSelectAsync();
+            return productos.Select(p => new ProductoSelectDto
+            {
+                Id = p.Id,
+                Nombre = p.Nombre,
+                Stock = p.Stock,
+                Precio = p.Precio
+            });
+        }
     }
 }
