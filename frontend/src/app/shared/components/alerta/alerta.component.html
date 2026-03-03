@@ -1,0 +1,9 @@
+@if (mensajeService.mensaje()) {
+  <div
+    class="alert alert-{{ mensajeService.mensaje()!.tipo }} alert-dismissible fade show"
+    role="alert"
+  >
+    {{ mensajeService.mensaje()!.texto }}
+    <button type="button" class="btn-close" (click)="mensajeService.cerrar()"></button>
+  </div>
+}

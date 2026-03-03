@@ -1,0 +1,192 @@
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h2 class="mb-0"><i class="bi bi-box me-2"></i>Productos</h2>
+  <a routerLink="/productos/nuevo" class="btn btn-primary">
+    <i class="bi bi-plus-lg me-1"></i>Nuevo Producto
+  </a>
+</div>
+
+<!-- Alerta -->
+<app-alerta />
+
+<!-- Filtros -->
+<div class="card mb-4">
+  <div class="card-body">
+    <h6 class="card-title mb-3"><i class="bi bi-funnel me-1"></i>Filtros</h6>
+    <div class="row g-3">
+      <div class="col-md-3">
+        <label class="form-label">Nombre</label>
+        <input
+          type="text"
+          class="form-control"
+          placeholder="Buscar por nombre..."
+          [(ngModel)]="filtroNombre"
+        />
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Categoría</label>
+        <select class="form-select" [(ngModel)]="filtroCategoriaId">
+          <option [ngValue]="undefined">Todas</option>
+          @for (categoria of categorias; track categoria.id) {
+            <option [ngValue]="categoria.id">{{ categoria.nombre }}</option>
+          }
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Precio mínimo</label>
+        <input
+          type="number"
+          class="form-control"
+          placeholder="0.00"
+          [(ngModel)]="filtroPrecioMin"
+        />
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Precio máximo</label>
+        <input
+          type="number"
+          class="form-control"
+          placeholder="0.00"
+          [(ngModel)]="filtroPrecioMax"
+        />
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Estado</label>
+        <select class="form-select" [(ngModel)]="filtroActivo">
+          <option [ngValue]="undefined">Todos</option>
+          <option [ngValue]="true">Activo</option>
+          <option [ngValue]="false">Inactivo</option>
+        </select>
+      </div>
+      <div class="col-md-3 d-flex align-items-end gap-2">
+        <button class="btn btn-primary w-100" (click)="cargarProductos()">
+          <i class="bi bi-search me-1"></i>Buscar
+        </button>
+        <button class="btn btn-outline-secondary w-100" (click)="limpiarFiltros()">
+          <i class="bi bi-x-lg me-1"></i>Limpiar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Tabla -->
+<div class="card">
+  <div class="card-body">
+    @if (cargando) {
+      <div class="text-center py-4">
+        <div class="spinner-border text-primary"></div>
+      </div>
+    } @else if (productos.length === 0) {
+      <div class="text-center py-4 text-muted">
+        <i class="bi bi-inbox fs-1 d-block mb-2"></i>No se encontraron productos
+      </div>
+    } @else {
+      <div class="table-responsive">
+        <table class="table table-hover align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>#</th>
+              <th>Nombre</th>
+              <th>Categoría</th>
+              <th>Precio</th>
+              <th>Stock</th>
+              <th>Estado</th>
+              <th class="text-end">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (producto of productos; track producto.id) {
+              <tr>
+                <td>{{ producto.id }}</td>
+                <td>
+                  @if (producto.imagenUrl) {
+                    <img
+                      [src]="producto.imagenUrl"
+                      [alt]="producto.nombre"
+                      class="me-2 rounded"
+                      width="32"
+                      height="32"
+                      style="object-fit: cover"
+                    />
+                  }
+                  {{ producto.nombre }}
+                </td>
+                <td>{{ producto.categoriaNombre }}</td>
+                <td>{{ producto.precio | currency: 'USD' }}</td>
+                <td>
+                  <span
+                    class="badge"
+                    [class.bg-success]="producto.stock > 10"
+                    [class.bg-warning]="producto.stock > 0 && producto.stock <= 10"
+                    [class.bg-danger]="producto.stock === 0"
+                  >
+                    {{ producto.stock }}
+                  </span>
+                </td>
+                <td>
+                  <span
+                    class="badge"
+                    [class.bg-success]="producto.activo"
+                    [class.bg-secondary]="!producto.activo"
+                  >
+                    {{ producto.activo ? 'Activo' : 'Inactivo' }}
+                  </span>
+                </td>
+                <td class="text-end">
+                  <a
+                    [routerLink]="['/productos/editar', producto.id]"
+                    class="btn btn-sm btn-outline-primary me-1"
+                  >
+                    <i class="bi bi-pencil"></i>
+                  </a>
+                  <button class="btn btn-sm btn-outline-danger" (click)="eliminar(producto.id)">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Paginación -->
+      <div class="d-flex justify-content-between align-items-center mt-3">
+        <div class="d-flex align-items-center gap-2">
+          <label class="form-label mb-0">Mostrar</label>
+          <select
+            class="form-select form-select-sm w-auto"
+            [(ngModel)]="itemsPorPagina"
+            (ngModelChange)="cargarProductos()"
+          >
+            <option [ngValue]="5">5</option>
+            <option [ngValue]="10">10</option>
+            <option [ngValue]="25">25</option>
+            <option [ngValue]="50">50</option>
+          </select>
+          <span class="text-muted">de {{ totalItems }} registros</span>
+        </div>
+        @if (totalPaginas > 1) {
+          <nav class="mt-3">
+            <ul class="pagination justify-content-end mb-0">
+              <li class="page-item" [class.disabled]="paginaActual === 1">
+                <button class="page-link" (click)="cambiarPagina(paginaActual - 1)">
+                  <i class="bi bi-chevron-left"></i>
+                </button>
+              </li>
+              @for (pagina of paginas; track pagina) {
+                <li class="page-item" [class.active]="pagina === paginaActual">
+                  <button class="page-link" (click)="cambiarPagina(pagina)">{{ pagina }}</button>
+                </li>
+              }
+              <li class="page-item" [class.disabled]="paginaActual === totalPaginas">
+                <button class="page-link" (click)="cambiarPagina(paginaActual + 1)">
+                  <i class="bi bi-chevron-right"></i>
+                </button>
+              </li>
+            </ul>
+          </nav>
+        }
+      </div>
+    }
+  </div>
+</div>

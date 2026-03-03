@@ -1,0 +1,166 @@
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h2 class="mb-0"><i class="bi bi-arrow-left-right me-2"></i>Transacciones</h2>
+  <a routerLink="/transacciones/nueva" class="btn btn-primary">
+    <i class="bi bi-plus-lg me-1"></i>Nueva Transacción
+  </a>
+</div>
+
+<app-alerta />
+
+<!-- Filtros -->
+<div class="card mb-4">
+  <div class="card-body">
+    <h6 class="card-title mb-3"><i class="bi bi-funnel me-1"></i>Filtros</h6>
+    <div class="row g-3">
+      <div class="col-md-3">
+        <label class="form-label">Producto</label>
+        <select class="form-select" [(ngModel)]="filtroProductoId">
+          <option [ngValue]="undefined">Todos</option>
+          @for (producto of productos; track producto.id) {
+            <option [ngValue]="producto.id">{{ producto.nombre }}</option>
+          }
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Tipo</label>
+        <select class="form-select" [(ngModel)]="filtroTipo">
+          <option value="">Todos</option>
+          <option value="Compra">Compra</option>
+          <option value="Venta">Venta</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Fecha inicio</label>
+        <input type="date" class="form-control" [(ngModel)]="filtroFechaInicio" />
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Fecha fin</label>
+        <input type="date" class="form-control" [(ngModel)]="filtroFechaFin" />
+      </div>
+      <div class="col-md-3 d-flex align-items-end gap-2">
+        <button class="btn btn-primary w-100" (click)="cargarTransacciones()">
+          <i class="bi bi-search me-1"></i>Buscar
+        </button>
+        <button class="btn btn-outline-secondary w-100" (click)="limpiarFiltros()">
+          <i class="bi bi-x-lg me-1"></i>Limpiar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Tabla -->
+<div class="card">
+  <div class="card-body">
+    @if (cargando) {
+      <div class="text-center py-4">
+        <div class="spinner-border text-primary"></div>
+      </div>
+    } @else if (transacciones.length === 0) {
+      <div class="text-center py-4 text-muted">
+        <i class="bi bi-inbox fs-1 d-block mb-2"></i>No se encontraron transacciones
+      </div>
+    } @else {
+      <div class="table-responsive">
+        <table class="table table-hover align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>#</th>
+              <th>Fecha</th>
+              <th>Tipo</th>
+              <th>Producto</th>
+              <th>Cantidad</th>
+              <th>Precio unitario</th>
+              <th>Precio total</th>
+              <th>Stock actual</th>
+              <th class="text-end">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (transaccion of transacciones; track transaccion.id) {
+              <tr>
+                <td>{{ transaccion.id }}</td>
+                <td>{{ transaccion.fecha | date: 'dd/MM/yyyy HH:mm' }}</td>
+                <td>
+                  <span
+                    class="badge"
+                    [class.bg-success]="transaccion.tipo === 'Compra'"
+                    [class.bg-danger]="transaccion.tipo === 'Venta'"
+                  >
+                    {{ transaccion.tipo }}
+                  </span>
+                </td>
+                <td>{{ transaccion.productoNombre }}</td>
+                <td>{{ transaccion.cantidad }}</td>
+                <td>{{ transaccion.precioUnitario | currency: 'USD' }}</td>
+                <td>{{ transaccion.precioTotal | currency: 'USD' }}</td>
+                <td>
+                  <span
+                    class="badge"
+                    [class.bg-success]="transaccion.stockActual > 10"
+                    [class.bg-warning]="
+                      transaccion.stockActual > 0 && transaccion.stockActual <= 10
+                    "
+                    [class.bg-danger]="transaccion.stockActual === 0"
+                  >
+                    {{ transaccion.stockActual }}
+                  </span>
+                </td>
+                <td class="text-end">
+                  <a
+                    [routerLink]="['/transacciones/editar', transaccion.id]"
+                    class="btn btn-sm btn-outline-primary me-1"
+                  >
+                    <i class="bi bi-pencil"></i>
+                  </a>
+                  <button class="btn btn-sm btn-outline-danger" (click)="eliminar(transaccion.id)">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Paginación -->
+      <div class="d-flex justify-content-between align-items-center mt-3">
+        <div class="d-flex align-items-center gap-2">
+          <label class="form-label mb-0">Mostrar</label>
+          <select
+            class="form-select form-select-sm w-auto"
+            [(ngModel)]="itemsPorPagina"
+            (ngModelChange)="cargarTransacciones()"
+          >
+            <option [ngValue]="5">5</option>
+            <option [ngValue]="10">10</option>
+            <option [ngValue]="25">25</option>
+            <option [ngValue]="50">50</option>
+          </select>
+          <span class="text-muted">de {{ totalItems }} registros</span>
+        </div>
+        @if (totalPaginas > 1) {
+          <nav class="mt-3">
+            <ul class="pagination justify-content-end mb-0">
+              <li class="page-item" [class.disabled]="paginaActual === 1">
+                <button class="page-link" (click)="cambiarPagina(paginaActual - 1)">
+                  <i class="bi bi-chevron-left"></i>
+                </button>
+              </li>
+              @for (pagina of paginas; track pagina) {
+                <li class="page-item" [class.active]="pagina === paginaActual">
+                  <button class="page-link" (click)="cambiarPagina(pagina)">{{ pagina }}</button>
+                </li>
+              }
+              <li class="page-item" [class.disabled]="paginaActual === totalPaginas">
+                <button class="page-link" (click)="cambiarPagina(paginaActual + 1)">
+                  <i class="bi bi-chevron-right"></i>
+                </button>
+              </li>
+            </ul>
+          </nav>
+        }
+      </div>
+    }
+  </div>
+</div>

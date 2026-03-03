@@ -26,6 +26,7 @@ CREATE TABLE productos.productos (
     precio          NUMERIC(10, 2)  NOT NULL CHECK (precio >= 0),
     stock           INT             NOT NULL DEFAULT 0 CHECK (stock >= 0),
     activo          BOOLEAN         NOT NULL DEFAULT TRUE,
+    eliminado       BOOLEAN         NOT NULL DEFAULT FALSE,
     creado_en       TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     actualizado_en  TIMESTAMP       DEFAULT CURRENT_TIMESTAMP
 );
@@ -45,6 +46,7 @@ CREATE TABLE transacciones.transacciones (
     precio_unitario     NUMERIC(10, 2)                  NOT NULL CHECK (precio_unitario >= 0),
     precio_total        NUMERIC(10, 2)                  GENERATED ALWAYS AS (cantidad * precio_unitario) STORED,
     detalle             TEXT,
+    eliminado           BOOLEAN                         NOT NULL DEFAULT FALSE,
     creado_en           TIMESTAMP                       DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -54,9 +56,11 @@ CREATE TABLE transacciones.transacciones (
 
 CREATE INDEX idx_productos_categoria    ON productos.productos(categoria_id);
 CREATE INDEX idx_productos_activo       ON productos.productos(activo);
+CREATE INDEX idx_productos_eliminado    ON productos.productos(eliminado);
 CREATE INDEX idx_transacciones_producto ON transacciones.transacciones(producto_id);
 CREATE INDEX idx_transacciones_fecha    ON transacciones.transacciones(fecha);
 CREATE INDEX idx_transacciones_tipo     ON transacciones.transacciones(tipo);
+CREATE INDEX idx_transacciones_eliminado ON transacciones.transacciones(eliminado);
 
 -- ============================================================
 -- DATOS INICIALES
