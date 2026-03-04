@@ -106,6 +106,11 @@ export class ListaTransaccionesComponent implements OnInit {
     this.cargarTransacciones();
   }
 
+  cambiarItemsPorPagina(): void {
+    this.paginaActual = 1;
+    this.cargarTransacciones();
+  }
+
   get paginas(): number[] {
     return Array.from({ length: this.totalPaginas }, (_, i) => i + 1);
   }

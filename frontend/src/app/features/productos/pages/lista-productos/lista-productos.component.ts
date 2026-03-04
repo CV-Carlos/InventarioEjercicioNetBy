@@ -82,6 +82,11 @@ export class ListaProductosComponent implements OnInit {
     this.cargarProductos();
   }
 
+  cambiarItemsPorPagina(): void {
+    this.paginaActual = 1;
+    this.cargarProductos();
+  }
+
   limpiarFiltros(): void {
     this.filtroNombre = '';
     this.filtroCategoriaId = undefined;
