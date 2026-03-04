@@ -108,6 +108,12 @@
                 </td>
                 <td class="text-end">
                   <a
+                    [routerLink]="['/transacciones', transaccion.id]"
+                    class="btn btn-sm btn-outline-secondary me-1"
+                  >
+                    <i class="bi bi-eye"></i>
+                  </a>
+                  <a
                     [routerLink]="['/transacciones/editar', transaccion.id]"
                     class="btn btn-sm btn-outline-primary me-1"
                   >

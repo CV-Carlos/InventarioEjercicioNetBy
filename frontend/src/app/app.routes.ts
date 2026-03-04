@@ -28,6 +28,13 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'productos/:id',
+    loadComponent: () =>
+      import('./features/productos/pages/detalle-producto/detalle-producto.component').then(
+        (m) => m.DetalleProductoComponent
+      ),
+  },
+  {
     path: 'transacciones',
     loadComponent: () =>
       import('./features/transacciones/pages/lista-transacciones/lista-transacciones.component').then(
@@ -46,6 +53,13 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/transacciones/pages/form-transaccion/form-transaccion.component').then(
         (m) => m.FormTransaccionComponent
+      ),
+  },
+  {
+    path: 'transacciones/:id',
+    loadComponent: () =>
+      import('./features/transacciones/pages/detalle-transaccion/detalle-transaccion.component').then(
+        (m) => m.DetalleTransaccionComponent
       ),
   },
   {
